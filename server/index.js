@@ -1,33 +1,60 @@
+require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 const cors = require("cors");
-const RegisterModel = require("./models/Resister")
 
-const app = express()
-app.use(cors({ origin: "http://localhost:3000"}));
-app.use(express.json())
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/test")
+const DATABASE_URL = process.env.CONNECTION_URL;
 
-app.post("/register", (req,res) => {
-    const {name,email,password} = req.body;
-    RegisterModel.findOne({email: email})
-    .then(user => {
-        if(user) {
-            res.json("Already have an account")
-        } else {
-            RegisterModel.create({name: name, email:email,password: password })
-            .then(result => res.json("Account created"))
-            .catch(err => 
-                res.json(err))
-            }
-        }). catch(err => res.json(err))
-        })
+// mongoose.connect(DATABASE_URL, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
 
-app.get("/data", function (req, res) {
-    res.send("Hello There");
-})
+mongoose.connect(DATABASE_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String,
+});
+
+const Client = new mongoose.model("Client", userSchema);
+
+app.post("/register", async (req, res) => {
+  const user = req.body;
+  const newUser = new Client(user);
+  //   const newUser = new Client({
+  //     name: req.body,
+  //     email: req.body,
+  //     password: req.body
+  //   });
+  await newUser
+    .save()
+    .then(function (user) {
+      res.json(user);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
+
+app.get("/getUsers", function (req, res) {
+  Client.find({})
+    .then(function (users) {
+      res.json(users);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+});
 
 app.listen(3001, () => {
-    console.log("Server is running at port number 3001");
-})
+  console.log("Server is running at port number 3001");
+});

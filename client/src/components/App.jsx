@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import "./bootstrap-5.2.2-dist/css/bootstrap.min.css"
 import axios from "axios";
 
@@ -6,10 +6,17 @@ function App() {
   const [name, setName] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const  [users, setUsers] = useState([])
+
+  useEffect(() => {
+    axios.get("https://server-of-reactproject-lpo.onrender.com/getUsers")
+    .then(users => setUsers(users.data))
+    .catch(error => console.log(error))
+  })
   
   const handleSubmit = (e) => {
       e.preventDefault();
-      axios.post("http://localhost:3001/register", {name,email,password})
+      axios.post("https://server-of-reactproject-lpo.onrender.com/register", {name,email,password})
       .then(result => console.log(result))
       .catch(err => console.log(err))
   }
@@ -20,7 +27,7 @@ function App() {
       <h2>Register</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-            <label htmlFor="email">
+            <label htmlFor="name">
               <strong>Name</strong>
             </label>
             <input 
@@ -48,7 +55,7 @@ function App() {
             </div>
 
              <div className="mb-3">
-            <label htmlFor="email">
+            <label htmlFor="password">
               <strong>Password</strong>
             </label>
             <input 
@@ -65,11 +72,38 @@ function App() {
             <button type="submit" className="btn btn-success w-100 rounded-0">
                 Register
             </button>
-            <p>Already Have an Account</p>
-            <button className="btn -btn-default border w-100 bg-light rounded-0 text-decoration-none">
-              Login
-            </button>
           </form>
+      </div>
+
+      <div className="w-100 vh-100 d-flex justify-content-center align-items-center">
+      <div className="w-50">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>
+                Name
+              </th>
+              <th>
+                Email
+              </th>
+              <th>
+                Password
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              users.map((user) => (
+                <tr>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.password}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        </div>
       </div>
       
     </div>
